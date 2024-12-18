@@ -1,0 +1,75 @@
+<!-- templates/post.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Toast UI Viewer CSS -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <style>
+        .post-content {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        /* Toast UI Viewer 다크 테마 커스텀 */
+        .toastui-editor-contents {
+            color: #eee !important;
+        }
+        
+        .toastui-editor-contents p, 
+        .toastui-editor-contents h1,
+        .toastui-editor-contents h2,
+        .toastui-editor-contents h3,
+        .toastui-editor-contents h4,
+        .toastui-editor-contents h5,
+        .toastui-editor-contents h6 {
+            color: #eee !important;
+        }
+        
+        .toastui-editor-contents code {
+            background-color: #444 !important;
+            color: #eee !important;
+        }
+        
+        .toastui-editor-contents pre {
+            background-color: #444 !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>이승재의 블로그</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">홈으로</a>
+        </nav>
+    </header>
+    <main>
+        <article>
+            <h2>{{ post.title }}</h2>
+            {% if post.preview_image %}
+                <img src="{{ url_for('get_preview_image', post_id=post.id) }}" alt="Preview Image" width="100%">
+            {% endif %}
+            <div class="post-content">
+                <div id="viewer"></div>
+            </div>
+        </article>
+    </main>
+
+    <!-- Toast UI Viewer JS -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script>
+        const content = `{{ post.content|safe }}`;
+        const viewer = new toastui.Editor.factory({
+            el: document.querySelector('#viewer'),
+            viewer: true,
+            initialValue: content,
+            theme: 'dark'
+        });
+    </script>
+</body>
+</html>

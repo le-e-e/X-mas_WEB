@@ -1,0 +1,77 @@
+<!-- templates/edit.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit Post</title>
+ <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+
+</head>
+<body>
+    <header>
+        <h1>이승재의 블로그 - Admin</h1>
+            <nav>
+              <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('admin') }}">Admin</a>
+                 <a href="{{ url_for('logout') }}">Logout</a>
+           </nav>
+    </header>
+
+
+
+    <main>
+
+        <h2>Edit Post</h2>
+
+        <form method="post"  enctype="multipart/form-data">
+
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="{{ post.title }}" required><br><br>
+
+
+
+                <label for="preview_image">Preview Image:</label>
+
+                 {% if post.preview_image %}
+                <img src="{{ url_for('get_preview_image', post_id=post.id) }}" alt="Preview Image" width="100px"><br>
+                Current Image (replace by uploading a new one)<br>
+             {% endif %}
+            <input type="file" id="preview_image" name="preview_image"><br><br>
+
+
+
+
+
+            <label for="content">Content:</label><br>
+            <div id="editor">{{post.content}}</div>
+                        <textarea name="content" id="content" style="display: none;"></textarea><br>
+
+            <button type="submit">Update Post</button>
+
+        </form>
+
+    </main>
+
+
+
+
+     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+        <script>
+            const editor = new toastui.Editor({
+                el: document.querySelector('#editor'),
+                height: '300px',
+                initialEditType: 'wysiwyg',
+                previewStyle: 'vertical',
+initialValue:`{{post.content}}`
+            });
+                document.getElementById('editor').addEventListener('keyup',()=>{
+                document.getElementById('content').innerHTML=editor.getMarkdown()
+
+            })
+           
+            </script>
+</body>
+</html>

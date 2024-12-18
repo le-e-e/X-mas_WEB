@@ -1,0 +1,97 @@
+<!-- templates/create.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>글 작성</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+</head>
+<body>
+    <header>
+        <h1>이승재</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">홈으로</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>새 글 작성</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="title">제목:</label><br>
+            <input type="text" name="title" id="title" required><br><br>
+
+            <label for="preview_image">미리보기 이미지:</label><br>
+            <input type="file" name="preview_image" id="preview_image" accept="image/*"><br><br>
+
+            <label for="editor">내용:</label><br>
+            <div id="editor"></div>
+            <input type="hidden" name="content" id="content-hidden">
+            
+            <br>
+            <button type="submit">작성 완���</button>
+        </form>
+    </main>
+
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script>
+        const editor = new toastui.Editor({
+            el: document.querySelector('#editor'),
+            height: '500px',
+            initialEditType: 'wysiwyg',
+            previewStyle: 'vertical'
+        });
+
+        document.querySelector('form').addEventListener('submit', function(event) {
+            document.getElementById('content-hidden').value = editor.getMarkdown();
+        });
+    </script>
+
+    <!-- 눈 내리는 효과 스크립트 추가 -->
+    <script>
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            
+            // '새 글 작성' 제목의 위치를 기준으로 시작점 설정
+            const titleElement = document.querySelector('main h2');
+            const titleRect = titleElement.getBoundingClientRect();
+            const startY = titleRect.top;
+            
+            // 초기 위치 설정
+            const startPositionLeft = Math.random() * 100;
+            snowflake.style.left = startPositionLeft + 'vw';
+            snowflake.style.top = startY + 'px';
+            
+            // 애니메이션 설정
+            const animationDuration = Math.random() * 3 + 2;
+            snowflake.style.animation = `snowfall ${animationDuration}s linear`;
+            
+            document.body.appendChild(snowflake);
+
+            // 눈이 바닥에 닿았을 때
+            snowflake.addEventListener('animationend', () => {
+                // 눈송이를 바닥에 고정
+                snowflake.classList.remove('snowflake');
+                snowflake.classList.add('landed-snow');
+                snowflake.style.animation = '';
+                snowflake.style.left = startPositionLeft + 'vw';
+                snowflake.style.bottom = '0';
+                snowflake.style.top = 'auto';
+                
+                // 4초 후에 사라지는 효과
+                setTimeout(() => {
+                    snowflake.style.opacity = '0';
+                    setTimeout(() => {
+                        snowflake.remove();
+                    }, 1000);
+                }, 4000);
+            });
+        }
+
+        // 100ms마다 새로운 눈송이 생성
+        setInterval(createSnowflake, 100);
+    </script>
+</body>
+</html>

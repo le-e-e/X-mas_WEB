@@ -1,0 +1,206 @@
+/* static/style.css */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #0a1f2f;
+    color: #eee;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.snowflake {
+    position: fixed;
+    color: white;
+    font-size: 1.5em;
+    z-index: 1;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.landed-snow {
+    position: fixed;
+    bottom: 0;
+    color: white;
+    font-size: 1.5em;
+    z-index: 1;
+    opacity: 0.8;
+    transition: opacity 1s ease;
+    pointer-events: none;
+}
+
+@keyframes snowfall {
+    0% {
+        transform: translateY(-10vh) translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(90vh) translateX(20px);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
+header {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 100%);
+    padding: 1.5rem;
+    border-bottom: 3px solid #c0b07f;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    color: #c0b07f;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+nav {
+    margin-left: auto;
+    padding: 0 1rem;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 15px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 100%);
+    border: 1px solid #c0b07f;
+}
+
+nav a:hover {
+    background: linear-gradient(135deg, #c0b07f 0%, #dac992 100%);
+    color: #1a472a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+main {
+    position: relative;
+    z-index: 2;
+    background: rgba(26, 71, 42, 0.2);
+    border-radius: 15px;
+    margin: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(192, 176, 127, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+.post-preview {
+    background: linear-gradient(135deg, rgba(26, 71, 42, 0.3) 0%, rgba(45, 90, 63, 0.3) 100%);
+    border: 1px solid rgba(192, 176, 127, 0.5);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+}
+
+.post-preview:hover {
+    background: linear-gradient(135deg, rgba(26, 71, 42, 0.5) 0%, rgba(45, 90, 63, 0.5) 100%);
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(192, 176, 127, 0.2);
+    border-color: #dac992;
+}
+
+.post-preview::after {
+    content: '❄';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #fff;
+    font-size: 1.2em;
+    opacity: 0.7;
+    animation: spin 10s linear infinite;
+    display: inline-block;
+    transform-origin: center;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.create-button {
+    background: linear-gradient(135deg, #c0b07f 0%, #dac992 100%);
+    color: #1a472a;
+    padding: 12px 28px;
+    border-radius: 25px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.create-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(192, 176, 127, 0.3);
+    background: linear-gradient(135deg, #dac992 0%, #e5d9b6 100%);
+}
+
+.post-preview h2 {
+    color: #fff;
+    margin-bottom: 1rem;
+    font-size: 1.5em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+}
+
+.post-details a {
+    color: #fff;
+    text-decoration: none;
+    padding: 5px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    backdrop-filter: blur(5px);
+    background: rgba(255, 255, 255, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.post-details a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+    transform: translateY(-2px);
+}
+
+.success {
+    color: #c0b07f;
+    background-color: rgba(192, 176, 127, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    border-left: 4px solid #c0b07f;
+}
+
+.error {
+    color: #ff9999;
+    background-color: rgba(255, 153, 153, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    border-left: 4px solid #ff9999;
+}

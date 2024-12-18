@@ -1,0 +1,172 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2021012005</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .post-preview {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .post-preview.new-post {
+            animation: highlightNew 1s ease;
+        }
+
+        @keyframes highlightNew {
+            0% {
+                background-color: #4CAF50;
+            }
+            100% {
+                background-color: #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>이승재</h1>
+        <nav>
+            <a href="{{ url_for('create') }}" class="create-button">글 작성</a>
+        </nav>
+    </header>
+    <main>
+        <h2>작성된 글</h2>
+        <div id="posts-container">
+            {% for post in posts %}
+            <div class="post-preview" data-post-id="{{ post.id }}">
+                {% if post.preview_image %}
+                <img src="{{ url_for('get_preview_image', post_id=post.id) }}" alt="Preview Image" width="150">
+                {% endif %}
+                <div class="post-details">
+                    <h2>{{ post.title }}</h2>
+                    <div>
+                        <a href="{{ url_for('post', post_id=post.id) }}">보기</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        let currentPosts = new Set(Array.from(document.querySelectorAll('.post-preview'))
+            .map(el => el.dataset.postId));
+
+        function updatePosts() {
+            fetch('/get_posts')
+                .then(response => response.json())
+                .then(posts => {
+                    const container = document.getElementById('posts-container');
+                    const newPosts = new Set(posts.map(post => post.id.toString()));
+                    
+                    // 새로운 포스트 추가
+                    posts.forEach(post => {
+                        if (!currentPosts.has(post.id.toString())) {
+                            const postElement = document.createElement('div');
+                            postElement.className = 'post-preview';
+                            postElement.dataset.postId = post.id;
+                            
+                            postElement.innerHTML = `
+                                ${post.has_image ? 
+                                    `<img src="/images/${post.id}" alt="Preview Image" width="150">` 
+                                    : ''}
+                                <div class="post-details">
+                                    <h2>${escapeHtml(post.title)}</h2>
+                                    <div>
+                                        <a href="/post/${post.id}">보기</a>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // 새 포스트를 맨 앞에 추가
+                            container.insertBefore(postElement, container.firstChild);
+                            postElement.classList.add('new-post');
+                            
+                            // 애니메이션 클래스 제거
+                            setTimeout(() => {
+                                postElement.classList.remove('new-post');
+                            }, 1000);
+                        }
+                    });
+                    
+                    currentPosts = newPosts;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // 1초마다 업데이트 체크
+        setInterval(updatePosts, 1000);
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+
+    <script>
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            
+            // '작성된 글' 제목의 위치를 기준으로 시작점 설정
+            const titleElement = document.querySelector('main h2');
+            const titleRect = titleElement.getBoundingClientRect();
+            const startY = titleRect.top;
+            
+            // 초기 위치 설정
+            const startPositionLeft = Math.random() * 100;
+            snowflake.style.left = startPositionLeft + 'vw';
+            snowflake.style.top = startY + 'px';
+            
+            // 애니메이션 설정
+            const animationDuration = Math.random() * 3 + 2;
+            snowflake.style.animation = `snowfall ${animationDuration}s linear`;
+            
+            document.body.appendChild(snowflake);
+
+            // 눈이 바닥에 닿았을 때
+            snowflake.addEventListener('animationend', () => {
+                // 눈송이를 바닥에 고정
+                snowflake.classList.remove('snowflake');
+                snowflake.classList.add('landed-snow');
+                snowflake.style.animation = '';
+                snowflake.style.left = startPositionLeft + 'vw';
+                snowflake.style.bottom = '0'; // 화면 맨 아래에 고정
+                snowflake.style.top = 'auto'; // top 속성 제거
+                
+                // 4초 후에 사라지는 효과
+                setTimeout(() => {
+                    snowflake.style.opacity = '0';
+                    setTimeout(() => {
+                        snowflake.remove();
+                    }, 1000);
+                }, 4000);
+            });
+        }
+
+        // 100ms마다 새로운 눈송이 생성
+        setInterval(createSnowflake, 100);
+    </script>
+</body>
+</html>
