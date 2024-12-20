@@ -154,12 +154,19 @@ main {
     border: none;
     font-weight: bold;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    user-select: none;
 }
 
 .create-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(192, 176, 127, 0.3);
     background: linear-gradient(135deg, #dac992 0%, #e5d9b6 100%);
+}
+
+.create-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(192, 176, 127, 0.2);
 }
 
 .post-preview h2 {
