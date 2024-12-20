@@ -16,8 +16,18 @@
     </header>
 
     <main>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
         <h2>새 글 작성</h2>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="createForm">
             <label for="title">제목:</label><br>
             <input type="text" name="title" id="title" required><br><br>
 
@@ -26,10 +36,10 @@
 
             <label for="editor">내용:</label><br>
             <div id="editor"></div>
-            <input type="hidden" name="content" id="content-hidden">
+            <input type="hidden" name="content" id="content">
             
             <br>
-            <button type="submit">작성 완���</button>
+            <button type="submit">작성 완료</button>
         </form>
     </main>
 
@@ -42,55 +52,47 @@
             previewStyle: 'vertical'
         });
 
-        document.querySelector('form').addEventListener('submit', function(event) {
-            document.getElementById('content-hidden').value = editor.getMarkdown();
+        // 폼 제출 전에 에디터 내용을 hidden input에 설정
+        document.getElementById('createForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // 기본 제출을 막습니다
+            const content = editor.getMarkdown();
+            document.getElementById('content').value = content;
+            
+            if (!document.getElementById('title').value.trim()) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+            
+            if (!content.trim()) {
+                alert('내용을 입력해주세요.');
+                return;
+            }
+            
+            this.submit(); // 폼을 제출합니다
         });
     </script>
 
-    <!-- 눈 내리는 효과 스크립트 추가 -->
+    <!-- 눈 내리는 효과 스크립트 -->
     <script>
         function createSnowflake() {
             const snowflake = document.createElement('div');
             snowflake.classList.add('snowflake');
             snowflake.innerHTML = '❄';
             
-            // '새 글 작성' 제목의 위치를 기준으로 시작점 설정
-            const titleElement = document.querySelector('main h2');
-            const titleRect = titleElement.getBoundingClientRect();
-            const startY = titleRect.top;
-            
-            // 초기 위치 설정
             const startPositionLeft = Math.random() * 100;
             snowflake.style.left = startPositionLeft + 'vw';
-            snowflake.style.top = startY + 'px';
+            snowflake.style.top = '0';
             
-            // 애니메이션 설정
             const animationDuration = Math.random() * 3 + 2;
             snowflake.style.animation = `snowfall ${animationDuration}s linear`;
             
             document.body.appendChild(snowflake);
 
-            // 눈이 바닥에 닿았을 때
             snowflake.addEventListener('animationend', () => {
-                // 눈송이를 바닥에 고정
-                snowflake.classList.remove('snowflake');
-                snowflake.classList.add('landed-snow');
-                snowflake.style.animation = '';
-                snowflake.style.left = startPositionLeft + 'vw';
-                snowflake.style.bottom = '0';
-                snowflake.style.top = 'auto';
-                
-                // 4초 후에 사라지는 효과
-                setTimeout(() => {
-                    snowflake.style.opacity = '0';
-                    setTimeout(() => {
-                        snowflake.remove();
-                    }, 1000);
-                }, 4000);
+                snowflake.remove();
             });
         }
 
-        // 100ms마다 새로운 눈송이 생성
         setInterval(createSnowflake, 100);
     </script>
 </body>
