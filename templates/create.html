@@ -27,7 +27,7 @@
         {% endwith %}
 
         <h2>새 글 작성</h2>
-        <form method="POST" enctype="multipart/form-data" id="createForm">
+        <form method="POST" action="{{ url_for('create') }}" enctype="multipart/form-data" id="createForm">
             <label for="title">제목:</label><br>
             <input type="text" name="title" id="title" required><br><br>
 
@@ -52,13 +52,13 @@
             previewStyle: 'vertical'
         });
 
-        // 폼 제출 전에 에디터 내용을 hidden input에 설정
         document.getElementById('createForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // 기본 제출을 막습니다
-            const content = editor.getMarkdown();
-            document.getElementById('content').value = content;
+            e.preventDefault();
             
-            if (!document.getElementById('title').value.trim()) {
+            const title = document.getElementById('title').value.trim();
+            const content = editor.getMarkdown();
+            
+            if (!title) {
                 alert('제목을 입력해주세요.');
                 return;
             }
@@ -68,7 +68,12 @@
                 return;
             }
             
-            this.submit(); // 폼을 제출합니다
+            document.getElementById('content').value = content;
+            
+            console.log('제목:', title);
+            console.log('내용:', content);
+            
+            this.submit();
         });
     </script>
 

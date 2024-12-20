@@ -77,61 +77,12 @@ def index():
 def create():
     if request.method == 'POST':
         try:
-            original_title = request.form['title'].strip()
-            original_content = request.form['content']
+            title = request.form.get('title')
+            content = request.form.get('content')
             
-            # 다양한 공격 패턴 감지
-            suspicious_patterns = {
-                'xss': [
-                    '<script', 'javascript:', 'onerror=', 'onclick=',
-                    'onload=', 'onmouseover=', 'eval(', 'alert(',
-                    'document.cookie', 'window.location',
-                    '<iframe', 'frame', 'embed',
-                    'data:text/html', 'data:application/javascript',
-                    'data:image/svg+xml', 'javascript:void',
-                    'onmouseout=', 'onkeyup=', 'onkeydown=', 'onkeypress=',
-                    'onfocus=', 'onblur=', 'onsubmit=', 'onchange=',
-                    'ondblclick=', 'oncontextmenu=', 'ondrag=', 'ondrop=',
-                    'base64',
-                    'formaction=', 'xmlns=', 'xlink:href=',
-                    '<meta', 'http-equiv=',
-                    'expression(', 'url(javascript:', 'behavior:'
-                ],
-                'sql_injection': [
-                    'union select', 'union all', 'drop table',
-                    'delete from', '--', '1=1', 'or 1=1',
-                    'admin\'--', '" or "', '\' or \''
-                ],
-                'command_injection': [
-                    ';', '&&', '||', '|', '`', '$(',
-                    'ping ', 'wget ', 'curl ', 'bash '
-                ]
-            }
+            # 디버깅을 위한 출력
+            print("받은 데이터:", title, content)
             
-            is_suspicious = False
-            attack_type = None
-            
-            for attack, patterns in suspicious_patterns.items():
-                for pattern in patterns:
-                    if pattern in original_content.lower() or pattern in original_title.lower():
-                        is_suspicious = True
-                        attack_type = attack
-                        break
-                if is_suspicious:
-                    break
-            
-            if is_suspicious:
-                title = "해킹하지 마세요! 🚫"
-                content = f"""### ⚠️ 보안 경고
-
-의심스러운 패턴이 감지되어 게시글이 수정되었습니다.
-감지된 공격 유형: {attack_type.upper()}
-
-올바른 방법으로 글을 작성해주세요."""
-            else:
-                title = bleach.clean(original_title)
-                content = sanitize_html(original_content)
-
             if not title or not content:
                 flash('제목과 내용을 모두 입력해주세요.', 'error')
                 return redirect(url_for('create'))
@@ -142,49 +93,46 @@ def create():
             if 'preview_image' in request.files:
                 file = request.files['preview_image']
                 if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    if not allowed_file(filename):
+                    if not allowed_file(file.filename):
                         flash('허용되지 않는 파일 형식입니다.', 'error')
                         return redirect(url_for('create'))
 
-                    file_content = file.read()
-                    
-                    if not validate_image(io.BytesIO(file_content)):
-                        flash('유효하지 않은 이미지 파일입니다.', 'error')
-                        return redirect(url_for('create'))
-
                     try:
-                        image = Image.open(io.BytesIO(file_content))
+                        image = Image.open(file)
                         max_size = (800, 800)
                         image.thumbnail(max_size)
                         
-                        output = io.BytesIO()
-                        image.save(output, format='PNG')
-                        preview_image = output.getvalue()
+                        img_byte_arr = io.BytesIO()
+                        image.save(img_byte_arr, format='PNG')
+                        preview_image = img_byte_arr.getvalue()
                         image_mime_type = 'image/png'
                     except Exception as e:
+                        print("이미지 처리 오류:", str(e))  # 디버깅용
                         flash('이미지 처리 중 오류가 발생했습니다.', 'error')
                         return redirect(url_for('create'))
 
-            post = Post(
-                title=title,
-                content=content,
-                preview_image=preview_image,
-                image_mime_type=image_mime_type
-            )
-            
-            db.session.add(post)
-            db.session.commit()
-            
-            if is_suspicious:
-                flash(f'보안 위험({attack_type})이 감지되어 게시글이 수정되었습니다.', 'warning')
-            else:
-                flash('글이 성공적으로 작성되었습니다.', 'success')
+            try:
+                post = Post(
+                    title=title,
+                    content=content,
+                    preview_image=preview_image,
+                    image_mime_type=image_mime_type
+                )
                 
-            return redirect(url_for('index'))
+                db.session.add(post)
+                db.session.commit()
+                
+                flash('글이 성공적으로 작성되었습니다.', 'success')
+                return redirect(url_for('index'))
+            
+            except Exception as e:
+                print("데이터베이스 오류:", str(e))  # 디버깅용
+                db.session.rollback()
+                flash('데이터베이스 오류가 발생했습니다.', 'error')
+                return redirect(url_for('create'))
 
         except Exception as e:
-            db.session.rollback()
+            print("일반 오류:", str(e))  # 디버깅용
             flash('글 작성 중 오류가 발생했습니다.', 'error')
             return redirect(url_for('create'))
 
