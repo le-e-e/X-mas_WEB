@@ -1,7 +1,9 @@
 # app.py
 
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from models import db, Post
+from config import Config
+from db_setup import init_db  # db_setup.py에서 init_db 함수를 가져옵니다.
 import os
 from PIL import Image
 import io
@@ -12,22 +14,12 @@ import imghdr  # 이미지 타입 확인을 위한 라이브러리
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB 제한
-app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.jpeg', '.png', '.gif']
+app.config.from_object(Config)
 
-db = SQLAlchemy(app)
+db.init_app(app)
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    preview_image = db.Column(db.LargeBinary, nullable=True)
-    image_mime_type = db.Column(db.String(32), nullable=True)
-
-with app.app_context():
-    db.drop_all()
-    db.create_all()
+# 데이터베이스 초기화
+init_db(app)
 
 def allowed_file(filename):
     return '.' in filename and \
