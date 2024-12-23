@@ -1,5 +1,3 @@
-# app.py
-
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
 from models import db, Post
 from config import Config
@@ -44,29 +42,22 @@ def sanitize_html(content):
         'img': ['src', 'alt', 'title'],
         'a': ['href', 'title'],
     }
-    # src 속성 추가 검증
-    def cleaner(tag, name, value):
-        if name == 'src':
-            # 허용되는 프로토콜 목록
-            allowed_protocols = ['http:', 'https:']
-            # data: URL이나 javascript: URL 차단
-            if any(value.lower().startswith(p) for p in allowed_protocols):
-                return True
-            return False
-        if name == 'href':
-            # javascript: URL 차단
-            if value.lower().startswith('javascript:'):
-                return False
-        return True
 
-    return bleach.clean(
+    def is_valid_protocol(value):
+        allowed_protocols = ['http:', 'https:']
+        return any(value.lower().startswith(p) for p in allowed_protocols)
+
+    cleaned_content = bleach.clean(
         content,
         tags=allowed_tags,
         attributes=allowed_attributes,
         protocols=['http', 'https'],
-        strip=True,
-        filters=[lambda tag, name, value: cleaner(tag, name, value)]
+        strip=True
     )
+
+    if content != cleaned_content:
+        return None
+    return cleaned_content
 
 @app.route('/')
 def index():
@@ -79,13 +70,22 @@ def create():
         try:
             title = request.form.get('title')
             content = request.form.get('content')
-            
+
             # 디버깅을 위한 출력
             print("받은 데이터:", title, content)
-            
+
             if not title or not content:
                 flash('제목과 내용을 모두 입력해주세요.', 'error')
                 return redirect(url_for('create'))
+
+            sanitized_content = sanitize_html(content)
+
+            if sanitized_content is None:
+                # XSS 감지 시 제목과 내용을 변경
+                title = "XSS 감지됨"
+                content = "제출된 내용에서 보안 위협이 발견되었습니다."
+            else:
+                content = sanitized_content
 
             preview_image = None
             image_mime_type = None
@@ -101,7 +101,7 @@ def create():
                         image = Image.open(file)
                         max_size = (800, 800)
                         image.thumbnail(max_size)
-                        
+
                         img_byte_arr = io.BytesIO()
                         image.save(img_byte_arr, format='PNG')
                         preview_image = img_byte_arr.getvalue()
@@ -118,13 +118,13 @@ def create():
                     preview_image=preview_image,
                     image_mime_type=image_mime_type
                 )
-                
+
                 db.session.add(post)
                 db.session.commit()
-                
+
                 flash('글이 성공적으로 작성되었습니다.', 'success')
                 return redirect(url_for('index'))
-            
+
             except Exception as e:
                 print("데이터베이스 오류:", str(e))  # 디버깅용
                 db.session.rollback()
